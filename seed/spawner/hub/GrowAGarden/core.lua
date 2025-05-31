@@ -1,129 +1,106 @@
---// Services
-local CoreGui = game:GetService("CoreGui")
-local RunService = game:GetService("RunService")
+--// Obfuscated-like variable names (still somewhat readable for editability)
+local a = game:GetService("CoreGui")
+local b = game:GetService("RunService")
 
---// Function to load the main Seed Spawner GUI
-local function loadMainGUI()
-    -- Create main GUI
-    local mainGui = Instance.new("ScreenGui", CoreGui)
-    mainGui.Name = "SeedSpawnerGUI"
+-- Local data storage
+local file = "SeedSpawnerInventory.json"
+local inv = isfile(file) and game:GetService("HttpService"):JSONDecode(readfile(file)) or {}
 
-    local frame = Instance.new("Frame", mainGui)
-    frame.Size = UDim2.new(0, 300, 0, 150)
-    frame.Position = UDim2.new(0.5, -150, 0.5, -75)
-    frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    frame.BorderSizePixel = 0
-    frame.Active = true
-    frame.Draggable = true
-
-    -- Title label
-    local title = Instance.new("TextLabel", frame)
-    title.Size = UDim2.new(1, 0, 0, 30)
-    title.BackgroundTransparency = 1
-    title.Text = "FREE SEED HUB"
-    title.TextColor3 = Color3.new(1, 1, 1)
-    title.Font = Enum.Font.SourceSansBold
-    title.TextScaled = true
-
-    -- Seed name input box
-    local seedInput = Instance.new("TextBox", frame)
-    seedInput.PlaceholderText = "Enter seed name"
-    seedInput.Size = UDim2.new(0.8, 0, 0, 30)
-    seedInput.Position = UDim2.new(0.1, 0, 0, 40)
-    seedInput.ClearTextOnFocus = false
-    seedInput.Text = ""
-
-    -- Amount input box
-    local amountInput = Instance.new("TextBox", frame)
-    amountInput.PlaceholderText = "Enter amount"
-    amountInput.Size = UDim2.new(0.8, 0, 0, 30)
-    amountInput.Position = UDim2.new(0.1, 0, 0, 80)
-    amountInput.ClearTextOnFocus = false
-    amountInput.Text = ""
-
-    -- Get button
-    local getButton = Instance.new("TextButton", frame)
-    getButton.Text = "GET"
-    getButton.Size = UDim2.new(0.4, 0, 0, 30)
-    getButton.Position = UDim2.new(0.3, 0, 0, 120)
-    getButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-
-    -- Rainbow label
-    local rainbowLabel = Instance.new("TextLabel", frame)
-    rainbowLabel.Size = UDim2.new(1, 0, 0, 20)
-    rainbowLabel.Position = UDim2.new(0, 0, 1, -20)
-    rainbowLabel.BackgroundTransparency = 1
-    rainbowLabel.Text = "MADE BY: @SkibidiScript"
-    rainbowLabel.Font = Enum.Font.SourceSansBold
-    rainbowLabel.TextScaled = true
-
-    -- Rainbow text effect variables
-    local hue = 0
-
-    -- Rainbow text update loop
-    RunService.Heartbeat:Connect(function()
-        hue = (hue + 1) % 360
-        local color = Color3.fromHSV(hue / 360, 1, 1)
-        rainbowLabel.TextColor3 = color
-    end)
-
-    -- Seed inventory table (you'll want to save/load this properly in your real script)
-    local seedInventory = {}
-
-    -- Add seeds when GET button is clicked
-    getButton.MouseButton1Click:Connect(function()
-        local seedName = seedInput.Text:lower()
-        local amount = tonumber(amountInput.Text)
-
-        if seedName == "" or not amount or amount <= 0 then
-            warn("Please enter a valid seed name and amount!")
-            return
-        end
-
-        -- Add seeds to inventory (persistent saving/loading not included here)
-        seedInventory[seedName] = (seedInventory[seedName] or 0) + amount
-
-        print("Added " .. amount .. " " .. seedName .. " seed(s) to inventory.")
-        -- Here you would also fire server event or save data to persist inventory
-    end)
+-- Save inventory
+local function save()
+	writefile(file, game:GetService("HttpService"):JSONEncode(inv))
 end
 
---// Loading GUI Setup
-local loadingScreen = Instance.new("ScreenGui", CoreGui)
-loadingScreen.Name = "SeedSpawnerLoader"
+-- UI
+local function main()
+	local g = Instance.new("ScreenGui", a)
+	g.Name = "SeedSpawnerGUI"
 
-local frame = Instance.new("Frame", loadingScreen)
-frame.Size = UDim2.new(0, 400, 0, 100)
-frame.Position = UDim2.new(0.5, -200, 0.5, -50)
-frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-frame.BorderSizePixel = 0
+	local f = Instance.new("Frame", g)
+	f.Size = UDim2.new(0, 300, 0, 150)
+	f.Position = UDim2.new(0.5, -150, 0.5, -75)
+	f.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	f.BorderSizePixel = 0
+	f.Active = true
+	f.Draggable = true
 
-local label = Instance.new("TextLabel", frame)
-label.Size = UDim2.new(1, 0, 0.5, 0)
-label.Position = UDim2.new(0, 0, 0, 0)
-label.Text = "Loading... 0%"
-label.TextColor3 = Color3.fromRGB(255, 255, 255)
-label.BackgroundTransparency = 1
-label.TextScaled = true
+	local t = Instance.new("TextLabel", f)
+	t.Size = UDim2.new(1, 0, 0, 30)
+	t.BackgroundTransparency = 1
+	t.Text = "FREE SEED HUB"
+	t.TextColor3 = Color3.new(1, 1, 1)
+	t.Font = Enum.Font.SourceSansBold
+	t.TextScaled = true
 
-local barBackground = Instance.new("Frame", frame)
-barBackground.Size = UDim2.new(0.9, 0, 0.2, 0)
-barBackground.Position = UDim2.new(0.05, 0, 0.7, 0)
-barBackground.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	local s = Instance.new("TextBox", f)
+	s.PlaceholderText = "Enter seed name"
+	s.Size = UDim2.new(0.8, 0, 0, 30)
+	s.Position = UDim2.new(0.1, 0, 0, 40)
+	s.ClearTextOnFocus = false
+	s.Text = ""
 
-local progressBar = Instance.new("Frame", barBackground)
-progressBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-progressBar.Size = UDim2.new(0, 0, 1, 0)
+	local a = Instance.new("TextBox", f)
+	a.PlaceholderText = "Enter amount"
+	a.Size = UDim2.new(0.8, 0, 0, 30)
+	a.Position = UDim2.new(0.1, 0, 0, 80)
+	a.ClearTextOnFocus = false
+	a.Text = ""
 
--- Animate the loading bar for 30 seconds (0.3 seconds per 1%)
+	local btn = Instance.new("TextButton", f)
+	btn.Text = "GET"
+	btn.Size = UDim2.new(0.4, 0, 0, 30)
+	btn.Position = UDim2.new(0.3, 0, 0, 120)
+	btn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+
+	btn.MouseButton1Click:Connect(function()
+		local seed = s.Text:lower()
+		local amt = tonumber(a.Text)
+
+		if seed == "" or not amt or amt <= 0 then
+			warn("Enter a valid seed name and amount!")
+			return
+		end
+
+		inv[seed] = (inv[seed] or 0) + amt
+		save()
+
+		print("Added " .. amt .. " " .. seed .. "(s) to inventory.")
+	end)
+end
+
+-- Loading GUI
+local l = Instance.new("ScreenGui", a)
+l.Name = "SeedSpawnerLoader"
+
+local f = Instance.new("Frame", l)
+f.Size = UDim2.new(0, 400, 0, 100)
+f.Position = UDim2.new(0.5, -200, 0.5, -50)
+f.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+f.BorderSizePixel = 0
+
+local lbl = Instance.new("TextLabel", f)
+lbl.Size = UDim2.new(1, 0, 0.5, 0)
+lbl.Position = UDim2.new(0, 0, 0, 0)
+lbl.Text = "Loading... 0%"
+lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+lbl.BackgroundTransparency = 1
+lbl.TextScaled = true
+
+local bb = Instance.new("Frame", f)
+bb.Size = UDim2.new(0.9, 0, 0.2, 0)
+bb.Position = UDim2.new(0.05, 0, 0.7, 0)
+bb.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+
+local pb = Instance.new("Frame", bb)
+pb.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+pb.Size = UDim2.new(0, 0, 1, 0)
+
 task.spawn(function()
 	for i = 1, 100 do
-		progressBar.Size = UDim2.new(i / 100, 0, 1, 0)
-		label.Text = "Loading... " .. i .. "%"
-		wait(0.3)
+		pb.Size = UDim2.new(i / 100, 0, 1, 0)
+		lbl.Text = "Loading... " .. i .. "%"
+		wait(0.3) -- 30 sec total
 	end
-
-	-- Remove loading screen and load actual GUI
-	loadingScreen:Destroy()
-	loadMainGUI()
+	l:Destroy()
+	main()
 end)
